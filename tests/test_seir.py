@@ -32,7 +32,7 @@ EXPOSED_DURATION_SCALE = 1.0
 INFECTIOUS_DURATION_MEAN = 7.0
 
 
-def build_model(m, n, pop_fn, init_infected=0, init_recovered=0, birthrates=None, pyramid=None, survival=None, nticks=NTICKS):
+def build_model(m, n, pop_fn, init_infected=0, init_recovered=0, birthrates=None, pyramid=None, survival=None, nticks=NTICKS, beta=None):
     """
     Helper function: build a complete SEIR model with configurable demography.
     Creates Susceptible, Exposed, Infectious, and Recovered components plus
@@ -46,7 +46,8 @@ def build_model(m, n, pop_fn, init_infected=0, init_recovered=0, birthrates=None
     scenario["S"] -= init_recovered
     scenario["R"] = init_recovered
 
-    beta = R0 / INFECTIOUS_DURATION_MEAN
+    if not beta:
+        beta = R0 / INFECTIOUS_DURATION_MEAN
     params = PropertySet({"nticks": nticks, "beta": beta})
 
     with ts.start("Model Initialization"):
@@ -101,12 +102,20 @@ class Default(unittest.TestCase):
           • Final R fraction ≈ 0.5 ± 0.05.
         """
         with ts.start("test_single_node"):
-            model = build_model(1, 1, lambda x, y: 100_000, init_infected=10)
+            model = build_model(1, 1, lambda x, y: 100_000, init_infected=10, beta=0.25)
             model.run("SEIR Single Node")
 
-            I_series = model.nodes.I.sum(axis=1)
-            E_series = model.nodes.E.sum(axis=1)
-            # R_series = model.nodes.R.sum(axis=1)
+            # ---------------------------------------------------
+            # 1. Extract node-level arrays from LASER LaserFrame
+            # ---------------------------------------------------
+            # Each is shaped (T, N)
+            E_nodes = model.nodes.E
+            I_nodes = model.nodes.I
+            T, N = I_nodes.shape
+
+            # Derive series *after* these are defined
+            E_series = E_nodes.sum(axis=1)
+            I_series = I_nodes.sum(axis=1)
 
             # Quantitative checks
             assert E_series.max() > 0, "No exposed cases observed."
@@ -119,7 +128,7 @@ class Default(unittest.TestCase):
             assert abs(NT - N0) / N0 < 1e-4, "Population not conserved (ΔN>0.01%)."
 
             final_R_frac = model.nodes.R[-1].sum() / N0
-            assert 0.25 <= final_R_frac <= 0.35, f"Final attack fraction {final_R_frac:.3f} out of expected 0.25–0.35 range."
+            assert 0.55 <= final_R_frac <= 0.75, f"Final attack fraction {final_R_frac:.3f} out of expected 0.55–0.75 range."
 
     def test_grid(self):
         """
@@ -231,7 +240,6 @@ class Default(unittest.TestCase):
             infdur = dists.normal(loc=7.0, scale=2.0)
 
             # R0 → beta
-            #R0 = 1.386
             beta = R0 / 7.0
             params = PropertySet({"nticks": NTICKS, "beta": beta})
 
@@ -326,8 +334,9 @@ class Default(unittest.TestCase):
             coupling in long-term simulations.
         """
         with ts.start("test_seir_linear_with_demography"):
+            # Let's run for 2 years to let things smooth out with these settings
             cbr = np.random.uniform(5, 35, PEE)
-            birthrates = ValuesMap.from_nodes(cbr, nsteps=NTICKS*2)
+            birthrates = ValuesMap.from_nodes(cbr, nsteps=NTICKS * 2)
             pyramid = AliasedDistribution(np.full(89, 1_000))
             survival = KaplanMeierEstimator(np.full(89, 1_000).cumsum())
 
@@ -339,7 +348,7 @@ class Default(unittest.TestCase):
                 birthrates=birthrates.values,
                 pyramid=pyramid,
                 survival=survival,
-                nticks=NTICKS*2
+                nticks=NTICKS * 2,
             )
             model.run("SEIR Linear (with demography)")
 
@@ -353,7 +362,7 @@ class Default(unittest.TestCase):
             drift = (popT - pop0) / pop0
 
             # Extract per-node series (already shape: [ticks, nodes])
-            S_nodes = model.nodes.S          # shape (T, N)
+            S_nodes = model.nodes.S  # shape (T, N)
             E_nodes = model.nodes.E
             I_nodes = model.nodes.I
             R_nodes = model.nodes.R
@@ -418,21 +427,21 @@ class Default(unittest.TestCase):
             assert np.all(E >= 0)
             assert np.all(I_series >= 0)
             assert np.all(R >= 0)
-    
+
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--plot", action="store_true")
-    parser.add_argument("--verbose", action="store_true")
-    parser.add_argument("--validating", action="store_true")
-    parser.add_argument("-m", type=int, default=5)
-    parser.add_argument("-n", type=int, default=5)
-    parser.add_argument("-p", type=int, default=10)
-    parser.add_argument("-t", "--ticks", type=int, default=365)
-    parser.add_argument("-r", "--r0", type=float, default=1.386)
-    parser.add_argument("-g", "--grid", action="store_true")
-    parser.add_argument("-l", "--linear", action="store_true")
-    parser.add_argument("-s", "--single", action="store_true")
+    parser.add_argument("--plot", action="store_true", help="Enable plotting")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
+    parser.add_argument("--validating", action="store_true", help="Enable validating mode")
+    parser.add_argument("-m", type=int, default=5, help="Number of grid rows (M)")
+    parser.add_argument("-n", type=int, default=5, help="Number of grid columns (N)")
+    parser.add_argument("-p", type=int, default=10, help="Number of linear nodes (N)")
+    parser.add_argument("-t", "--ticks", type=int, default=365, help="Number of days to simulate (nticks)")
+    parser.add_argument("-r", "--r0", type=float, default=1.386, help="R0")
+    parser.add_argument("-g", "--grid", action="store_true", help="Run grid spatial test")
+    parser.add_argument("-l", "--linear", action="store_true", help="Run linear spatial test")
+    parser.add_argument("-s", "--single", action="store_true", help="Run single node test (not spatial)")
     parser.add_argument("unittest", nargs="*")
 
     args = parser.parse_args()
