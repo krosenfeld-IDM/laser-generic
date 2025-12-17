@@ -1,7 +1,7 @@
 # Overview
 
 [![Documentation Build Status](https://github.com/laser-base/laser-generic/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/laser-base/laser-generic/actions/workflows/pages/pages-build-deployment)
-[![GitHub Actions Build Status](https://github.com/laser-base/laser-generic/actions/workflows/github-actions.yml/badge.svg)](https://github.com/laser-base/laser-generic/actions)
+[![build](https://github.com/laser-base/laser-generic/actions/workflows/github-actions.yml/badge.svg?branch=main)](https://github.com/laser-base/laser-generic/actions/workflows/github-actions.yml)
 [![Coverage Status](https://codecov.io/gh/laser-base/laser-generic/branch/main/graphs/badge.svg?branch=main)](https://app.codecov.io/github/laser-base/laser-generic)
 [![PyPI Package latest release](https://img.shields.io/pypi/v/laser-generic.svg)](https://test.pypi.org/project/laser-generic)
 [![PyPI Wheel](https://img.shields.io/pypi/wheel/laser-generic.svg)](https://test.pypi.org/project/laser-generic)
