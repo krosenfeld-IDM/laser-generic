@@ -1,8 +1,8 @@
-# **LASER Architecture Overview**
+# LASER architecture overview
 
 *Architecture of `laser-core` and `laser-generic` packages*
 
-## **1. Purpose**
+## 1. Purpose
 
 This document describes the **structural architecture** and **core responsibilities** of:
 
@@ -19,7 +19,7 @@ Those are documented separately.
 
 ----
 
-# **2. High-Level System Structure**
+## 2. High-level system structure
 
 At a high level:
 
@@ -51,9 +51,9 @@ The architecture is designed so that:
 
 ----
 
-# **3. `laser-core` Architecture**
+## 3. `laser-core` architecture
 
-## **3.1 Responsibilities**
+### 3.1 Responsibilities
 
 `laser-core` is responsible for:
 
@@ -62,7 +62,7 @@ The architecture is designed so that:
 * Enabling **parallel execution** by keeping values contiguous and Numba-friendly.
 * Supporting dynamic population changes (primarily births and, optionally, resizing).
 
-## **3.2 `LaserFrame`**
+### 3.2 `LaserFrame`
 
 `LaserFrame` behaves conceptually like a high-performance `DataFrame` designed for:
 
@@ -70,7 +70,7 @@ The architecture is designed so that:
 * Parallel processing
 * Zero Python-object overhead
 
-### **Core Concepts**
+#### Core concepts
 
 * Each **row** = one agent or node.
 * Each **column** = a property.
@@ -79,14 +79,14 @@ The architecture is designed so that:
   * **Scalars** (e.g., age, state)
   * **Fixed-length vectors** (e.g., per-tick recording of S/E/I/R counts for nodes)
 
-### **Key Responsibilities**
+#### Key responsibilities
 
 * Allocate and manage contiguous memory for each property.
 * Provide direct access to underlying NumPy arrays.
 * Ensure layout is friendly to Numba kernels and multicore CPUs.
 * Resize automatically when agents are added.
 
-### **Class Diagram**
+#### Class diagram
 
 ```mermaid
 classDiagram
@@ -104,9 +104,9 @@ classDiagram
 
 ----
 
-# **4. `laser-generic` Architecture**
+## 4. `laser-generic` architecture
 
-## **4.1 Responsibilities**
+### 4.1 Responsibilities
 
 `laser-generic` provides:
 
@@ -115,7 +115,7 @@ classDiagram
 * A **component execution pipeline** ([optional pre-step validation] → step → [optional post-step validation]).
 * Integration with **Numba kernels** for high-performance agent updates.
 
-## **4.2 The `Model` Class**
+### 4.2 The `Model` class
 
 The `Model` object is the conductor of the simulation orchestra:
 
@@ -124,7 +124,7 @@ The `Model` object is the conductor of the simulation orchestra:
 * Maintains simulation time (`tick`).
 * Defines the **run loop**, calling component hooks in sequence.
 
-### **Simulation Loop (Conceptual)**
+#### Simulation loop (conceptual)
 
 ```python
 for tick in range(nticks):
@@ -140,7 +140,7 @@ This consistent execution order ensures deterministic progression, assuming your
 
 ----
 
-## **4.3 Component Architecture**
+### 4.3 Component architecture
 
 Components represent **modular behaviors**. Examples:
 
@@ -151,7 +151,7 @@ Components represent **modular behaviors**. Examples:
 * Births / deaths
 * Vaccinations
 
-### **Component Responsibilities**
+#### Component responsibilities
 
 * Own and manage their own model-specific properties.
 * Implement a `step(self, tick)` method containing the core dynamics.
@@ -162,7 +162,7 @@ Components represent **modular behaviors**. Examples:
   * `on_birth(self, tick, newborn_indices)`
   * `plot(self)`
 
-### **Component Interface**
+#### Component interface
 
 ```python
 class BaseComponent:
@@ -173,7 +173,7 @@ class BaseComponent:
     def plot(self): pass
 ```
 
-### **Kernel Delegation**
+#### Kernel delegation
 
 The `step()` method typically:
 
@@ -183,7 +183,7 @@ The `step()` method typically:
 
 ----
 
-# **5. Execution Flow Diagram**
+## 5. Execution flow diagram
 
 ```mermaid
 sequenceDiagram
@@ -212,7 +212,7 @@ sequenceDiagram
 
 ----
 
-# **6. SEIR Model: Detailed Class Diagram**
+## 6. SEIR model: detailed class diagram
 
 Below is a detailed wiring diagram for a **generic SEIR model** using `laser-generic` components. This example uses:
 
@@ -226,7 +226,7 @@ Below is a detailed wiring diagram for a **generic SEIR model** using `laser-gen
 
 (You may have bells, whistles, or mutations, but this is the canonical SEIR template.)
 
-## **Component Wiring Diagram**
+### Component wiring diagram
 
 ```mermaid
 classDiagram
@@ -298,7 +298,7 @@ classDiagram
     Mortality --> LaserFrame : reads/writes
 ```
 
-### **Property Flow (Narrative)**
+#### Property flow (narrative)
 
 * **Susceptible**
 
@@ -344,29 +344,29 @@ classDiagram
 
 ----
 
-# **7. Extensibility Structure**
+## 7. Extensibility structure
 
 The architecture supports extension in three directions:
 
-### **7.1 Adding New Properties**
+### 7.1 Adding new properties
 
 Add new per-agent or per-node attributes by modifying the `LaserFrame` schema.
 
-### **7.2 Adding New Components**
+### 7.2 Adding new components
 
 Implement a new class conforming to the Component interface.
 
-### **7.3 Creating Custom Models**
+### 7.3 Creating custom models
 
 Compose components into a `Model` in the correct execution order.
 
 ----
 
-# **8. Summary**
+## 8. Summary
 
 This architectural split provides:
 
-* **Modularity** — Components rely only on `LaserFrame` and Model lifecycle hooks.
+* **Modularity** — Components rely only on `LaserFrame` and model lifecycle hooks.
 * **Performance** — Data is laid out explicitly for multicore, Numba-driven kernels.
 * **Flexibility** — New models and components can be composed without touching core infrastructure.
 * **Stability** — `laser-core` provides a durable, minimal foundation; `laser-generic` builds everything else on top.

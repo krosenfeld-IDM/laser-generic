@@ -61,7 +61,7 @@ nav: # Navigation structure for the documentation
       - Exploring the critical community size of an SIR model: tutorials/notebooks/07_SIR_CCS.ipynb
       - The relationship between spatial coupling and incidence correlation in a 2-patch model: tutorials/notebooks/08_2patch_SIR_wbirths_correlation.ipynb
       - Modeling the spread of rabies in one dimension: tutorials/notebooks/09_rabies_diffusion_1D.ipynb
-      - Periodicity of measles in England and Wales: tutorials/notebooks/10_EW_periodicity.ipynb
+      - Periodicity of measles in England and Wales: tutorials/notebooks/10_England_and_Wales.ipynb
       - England and Wales measles analysis: tutorials/notebooks/EW_analysis.ipynb
       - SEI and SEIS model implementations: tutorials/notebooks/SEI_and_SEIS_implementations.ipynb
       - Explore the vital dynamics births components: tutorials/notebooks/births.ipynb
@@ -124,6 +124,9 @@ plugins:
   - table-reader # enables rendering of CSV/TSV files or tables
   - mkdocs-jupyter: # enables Jupyter notebooks to be rendered
       execute: true
+      execute_ignore:
+        - docs/tutorials/notebooks/07_SIR_CCS.ipynb
+        - docs/tutorials/notebooks/10_England_and_Wales.ipynb
       allow_errors: true
       include_source: true
   - gen-files:

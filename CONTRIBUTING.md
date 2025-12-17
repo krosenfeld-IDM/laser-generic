@@ -12,7 +12,7 @@ A few things to note before you begin:
 
 If you have any questions, please reach out to the LASER moderators, [Christopher Lorton](mailto:christopher.lorton@gatesfoundation.org) and [Paul Saxman](mailto:paul.saxman@gatesfoundation.org).
 
-## Contributing Code
+## Contributing code
 
 For contriburing code to LASER, you'll need to set up a local development environment:
 
@@ -48,7 +48,7 @@ For contriburing code to LASER, you'll need to set up a local development enviro
 
 7. Submit a pull request through the GitHub website.
 
-### Pull Request Guidelines
+### Pull request guidelines
 
 If you need some code review or feedback while you're developing the code just make the pull request.
 
