@@ -17,7 +17,7 @@ LASER (Lightweight Agent Spatial modeling for ERadication) is a framework for bu
 
 ## Documentation
 
-https://laser-base.github.io/laser-generic/
+https://laser.idmod.org/laser-generic/
 
 ## New model components
 
