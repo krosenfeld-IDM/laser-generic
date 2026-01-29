@@ -15,47 +15,11 @@ LASER (Lightweight Agent Spatial modeling for ERadication) is a framework for bu
 
 * Free software: MIT license
 
-## Documentation
+## Getting Started and Documentation
 
-https://laser.idmod.org/laser-generic/
+We recommend using the [LASER documentation](https://laser.idmod.org/laser-generic) to familiarize yourself with the LASER disease modeling framework. However, the instructions below may be sufficient for those who want to jump right in.
 
-## New model components
-
-`laser-generic` adds additional modeling components to those developed for `laser-core`. They include:
-
-### Infection & transmission
-
-- ``Infection()`` / ``Infection_SIS()`` – intrahost progression for SI and SIS models.
-- ``Susceptibility()`` – manages agent susceptibility.
-- ``Exposure()`` – models exposed (latent) state with timers.
-- ``Transmission()`` / ``TransmissionSIR()`` – interhost transmission dynamics.
-- ``Infect_Agents_In_Patch()`` / ``Infect_Random_Agents()`` – stochastic infection events.
-
-### Births & demographics
-
-- ``Births()`` – demographic process, assigning DOB and node IDs.
-- ``Births_ConstantPop()`` – keeps population constant by matching births to deaths.
-- ``Births_ConstantPop_VariableBirthRate()`` – constant population but with variable crude birth rates.
-
-### Immunization
-
-- ``ImmunizationCampaign()`` – age-targeted, periodic campaigns.
-- ``RoutineImmunization()`` – ongoing routine immunization at target ages.
-- ``immunize_in_age_window()`` – helper to immunize within an age band.
-
-### Initialization & seeding
-
-- ``seed_infections_in_patch()`` / ``seed_infections_randomly()`` / ``seed_infections_randomly_SI()`` – seed infections at start.
-- ``set_initial_susceptibility_in_patch()`` / ``set_initial_susceptibility_randomly()`` – initialize susceptibility.
-
-### Utilities
-
-- ``calc_capacity()`` – computes population capacity given births and ticks.
-- ``calc_distances()`` – helper for spatial coupling via geocoordinates.
-- ``get_default_parameters()`` – returns baseline parameters.
-
-
-## Installation
+### Installation
 
 We recommend using [`uv`](https://github.com/astral-sh/uv) for faster, more reliable installs:
 
@@ -72,29 +36,93 @@ pip install laser-generic
 To install the latest in-development version:
 
 ```
-pip install https://github.com/InstituteforDiseaseModeling/laser-generic/archive/main.zip
+pip install https://github.com/laser-core/laser-generic/archive/main.zip
 ```
 
-## Development
+#### Using `laser-generic`
 
-To run all the tests run:
+`laser-generic` can be used in your code after importing it into your project:
 
-```sh
-tox
+```python
+import laser.generic as lg
+
+print(lg.__version__)
 ```
 
-Note, to combine the coverage data from all the tox environments run:
+### Development
+
+1. clone the `laser-generic` repository with
+
+```bash
+git clone https://github.com/laser-base/laser-generic.git
+```
+
+2. install [`uv`](https://github.com/astral-sh/uv?tab=readme-ov-file#installation) _in your system [Python], i.e., _before_ creating and activating a virtual environment
+
+3. install `tox` as a tool in `uv` with the `tox-uv` plugin with
+
+```bash
+uv tool install tox --with tox-uv
+```
+
+4. change to the `laser-generic` directoryh with
+
+```bash
+cd laser-generic
+```
+
+5. create a virtual environment for development with 
+
+```bash
+uv venv .venv
+```
+
+6. activate the virtual environment with
+
+**Mac or Linux:**
+
+```bash
+source .venv/bin/activate
+```
 
 **Windows:**
+
 ```sh
-set PYTEST_ADDOPTS=--cov-append
- tox
+.venv\bin\Activate
 ```
 
-**Other:**
-```sh
-PYTEST_ADDOPTS=--cov-append tox
+#### Building Code in Development
+
+**Option 1: build "live" code** - Python scripts using `laser.generic` will import the code directly from the repository clone. Edits to the source code will take effect upon restarting the Python environment and importing `laser.generic`.
+
+with `pip`:
+
+```bash
+pip install -e ".[dev]"
 ```
+
+with `uv`:
+
+```bash
+uv pip install -e ".[dev]"
+```
+
+**Option 2: build an installable package** - this package must be installed into an environment to be used and changes to the source code on disk will not be picked up by consumers of `laser.generic` until the package is rebuilt and reinstalled. However this process mirrors using `laser.generic` as a dependency better than the "live code" option above.
+
+**Option 2A: build with `pip`**
+
+- install the `build` package: `python3 -m pip install build`
+- build the `laser-generic` Python packge: `python3 -m build`
+- find the wheel file, `.whl`, in the `dist` directory: `ls -l dist`
+
+**Option 2B: build with `uv`**
+
+- `uv build`
+- find the wheel file, `.whl`, in the `dist` directory: `ls -l dist`
+
+#### Running Tests
+
+Now you can run tests in the `tests` directory or run the entire check+docs+test suite with ```tox```. Running ```tox``` will run several consistency checks, build documentation, run tests against the supported versions of Python, and create a code coverage report based on the test suite. Note that the first run of ```tox``` may take a few minutes (~5). Subsequent runs should be quicker depending on the speed of your machine and the test suite (~2 minutes). You can use ```tox``` to run tests against a single version of Python with, for example, ```tox -e py312```.
 
 -----
 
